@@ -1,0 +1,94 @@
+name: Code CD
+on:
+  release:
+    types: [created]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2.0.1
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 8.6.0
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: |
+          pnpm install --no-frozen-lockfile
+
+      - name: Build
+        run: |
+          pnpm run build
+
+      - name: Get files
+        shell: bash
+        run: |
+          folder_path="./packages/code/dist"
+          cos_url_path="/libs/js_sdk_starter/code"
+          pre_str="https://assets.belloai.com$cos_url_path/laster"
+
+          file_list=$(find "$folder_path" -type f)
+          file_array_str=$(awk -v RS="\n" -v ORS=";" '{print $0}' <<< "$file_list")
+          joined_string=$(echo $file_array_str | sed "s|$folder_path|$pre_str|g")
+
+
+          echo "FOLDER_PATH=$folder_path" >> $GITHUB_ENV
+          echo "COS_URL_PATH=$cos_url_path" >> $GITHUB_ENV
+          echo "OSS_URLS_STR=$joined_string" >> $GITHUB_ENV
+
+      - name: 上传到腾讯云COS
+        uses: zkqiang/tencent-cos-action@v0.1.0
+        with:
+          args: upload -rs ${{env.FOLDER_PATH}}/ ${{env.COS_URL_PATH}}/laster/
+          secret_id: ${{ secrets.OSS_SECRET_ID }}
+          secret_key: ${{ secrets.OSS_SECRET_KEY }}
+          bucket: ${{ secrets.OSS_ASSETS_BUCKET }}
+          region: ${{ secrets.OSS_REGION }}
+      - name: 上传到腾讯云COS到历史版本
+        uses: zkqiang/tencent-cos-action@v0.1.0
+        with:
+          args: upload -rs ${{env.FOLDER_PATH}}/ ${{env.COS_URL_PATH}}/${{github.ref_name}}/
+          secret_id: ${{ secrets.OSS_SECRET_ID }}
+          secret_key: ${{ secrets.OSS_SECRET_KEY }}
+          bucket: ${{ secrets.OSS_ASSETS_BUCKET }}
+          region: ${{ secrets.OSS_REGION }}
+
+      - name: 刷新cnd
+        uses: threfo/tencentcloud-cdn@main
+        with:
+          urls: ${{env.OSS_URLS_STR}}
+          secret_id: ${{ secrets.OSS_SECRET_ID }}
+          secret_key: ${{ secrets.OSS_SECRET_KEY }}
+
+      - name: 构建成功消息
+        if: ${{ success() }}
+        uses: threfo/work-wechat-msg@main
+        with:
+          botKey: ${{ secrets.WORK_WECHAT_GITHUB_ROBOT_KEY }}
+          content: 🎉 项目${{ github.repository }}，分支${{ github.ref_name }}, ${{env.COS_URL_PATH}} CD构建成功，上传到 ${{env.COS_URL_PATH}}/laster/ --- Github Actions
+
+      - name: 构建失败消息
+        if: ${{ failure() }}
+        uses: threfo/work-wechat-msg@main
+        with:
+          botKey: ${{ secrets.WORK_WECHAT_GITHUB_ROBOT_KEY }}
+          content: ❌ 项目${{ github.repository }}，分支${{ github.ref_name }}, ${{env.COS_URL_PATH}} CD失败。--- Github Actions

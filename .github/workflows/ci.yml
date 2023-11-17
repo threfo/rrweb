@@ -1,0 +1,55 @@
+name: CI
+on:
+  push:
+    paths-ignore:
+      - 'api/**'
+      - '.vscode/**'
+      - 'docs/**'
+      - '**/**.md'
+  pull_request:
+    paths-ignore:
+      - 'api/**'
+      - '.vscode/**'
+      - 'docs/**'
+      - '**/**.md'
+jobs:
+  cache-and-install:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2.0.1
+        name: Install pnpm
+        with:
+          version: 8.6.0
+          run_install: false
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: |
+          pnpm install --no-frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
+
+      - name: 构建失败消息
+        if: ${{ failure() }}
+        uses: threfo/work-wechat-msg@main
+        with:
+          botKey: ${{ secrets.WORK_WECHAT_GITHUB_ROBOT_KEY }}
+          content: ❌ 项目${{ github.repository }}，分支${{ github.ref_name}}, ${{ github.ref }}CI失败。--- Github Actions

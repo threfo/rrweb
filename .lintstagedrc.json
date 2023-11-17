@@ -1,0 +1,6 @@
+{
+  "*.{js,ts}": ["pnpm lint:eslint", "pnpm lint:prettier", "pnpm test:git"],
+
+  "package.json": ["pnpm lint:prettier"],
+  "*.md": ["pnpm lint:markdownlint", "pnpm lint:prettier"]
+}
