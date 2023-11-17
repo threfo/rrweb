@@ -20,8 +20,12 @@
     "build:watch": "pnpm build --watch"
   },
   "devDependencies": {
+    "@rrweb/types": "2.0.0-alpha.11",
     "typescript": "^5.2.2",
     "vite": "^4.4.11",
     "vite-plugin-dts": "^3.6.3"
+  },
+  "dependencies": {
+    "rrweb": "2.0.0-alpha.4"
   }
 }
