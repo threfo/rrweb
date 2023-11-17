@@ -1,4 +1,4 @@
-import { plus1 } from '@belloai-rrweb/core'
+import '@belloai-rrweb/core'
 
 export function setupCounter(element: HTMLButtonElement) {
   let counter = 0
@@ -6,6 +6,6 @@ export function setupCounter(element: HTMLButtonElement) {
     counter = count
     element.innerHTML = `count is ${counter}`
   }
-  element.addEventListener('click', () => setCounter(plus1(counter)))
+  element.addEventListener('click', () => setCounter(++counter))
   setCounter(0)
 }
