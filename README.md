@@ -1,6 +1,6 @@
-# js_sdk_starter
+# rrweb
 
-js_sdk_starter
+rrweb
 
 ## start up
 

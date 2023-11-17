@@ -1,1 +1,1 @@
-# @js-sdk-starter/core
+# @belloai-rrweb/core

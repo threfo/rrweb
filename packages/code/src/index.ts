@@ -12,7 +12,7 @@ if (import.meta.vitest) {
 }
 
 export const plus1 = (a: number) => {
-  console.log('plus1 a1', a)
+  console.log('plus1 a2', a)
   return a + 1
 }
 

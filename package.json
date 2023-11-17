@@ -1,5 +1,5 @@
 {
-  "name": "js_sdk_starter",
+  "name": "rrweb",
   "version": "1.0.0",
   "description": "",
   "scripts": {
@@ -18,8 +18,8 @@
     "test:git": "vitest related --run --passWithNoTests",
     "coverage": "vitest run --coverage",
     "-------build---------": "----------------------------",
-    "build:core": "pnpm -F \"@js-sdk-starter/core\" build",
-    "build-w:core": "pnpm -F \"@js-sdk-starter/core\" build:watch",
+    "build:core": "pnpm -F \"@belloai-rrweb/core\" build",
+    "build-w:core": "pnpm -F \"@belloai-rrweb/core\" build:watch",
     "build": "npm-run-all test build:**",
     "-------dev---------": "----------------------------",
     "dev:core": "pnpm -F \"core-demo\" dev",

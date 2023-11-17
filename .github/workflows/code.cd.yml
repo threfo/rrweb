@@ -43,7 +43,7 @@ jobs:
         shell: bash
         run: |
           folder_path="./packages/code/dist"
-          cos_url_path="/libs/js_sdk_starter/code"
+          cos_url_path="/libs/rrweb/code"
           pre_str="https://assets.belloai.com$cos_url_path/laster"
 
           file_list=$(find "$folder_path" -type f)

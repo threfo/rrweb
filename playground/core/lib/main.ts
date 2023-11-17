@@ -1,4 +1,4 @@
-import { plus1 } from '@js-sdk-starter/core'
+import { plus1 } from '@belloai-rrweb/core'
 
 export function setupCounter(element: HTMLButtonElement) {
   let counter = 0
